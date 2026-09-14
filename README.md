@@ -12,8 +12,8 @@ Here are the changes from [Base Image Name]. This image is based on [Bluefin/Baz
 
 ### Added Applications (Runtime)
 
-- **CLI Tools (Homebrew)**: neovim, helix - [brief explanation]
-- **GUI Apps (Flatpak)**: Spotify, Thunderbird - [brief explanation]
+- **CLI Tools (Homebrew)**: `zellij` — a terminal multiplexer for managing persistent, multi-pane workflows.
+- **GUI Apps (Flatpak)**: Zen Browser — a privacy-focused web browser.
 
 ### Removed/Disabled
 
@@ -25,9 +25,7 @@ Here are the changes from [Base Image Name]. This image is based on [Bluefin/Baz
 - Desktop environment changes
 - Other notable modifications
 
-_Last updated: [date]_
-
-> Replace the placeholders above with your actual customizations whenever you add or remove packages, apps, or configuration. This section is what tells users how your image differs from the base.
+_Last updated: 2026-09-15_
 
 ## Guided Copilot Mode
 
