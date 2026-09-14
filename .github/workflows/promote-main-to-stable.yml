@@ -21,7 +21,7 @@ permissions:
   actions: read
   contents: write
   issues: write
-  packages: read
+  packages: write
   pull-requests: write
   statuses: write
 
@@ -41,7 +41,6 @@ jobs:
       registry: ghcr.io/${{ github.repository_owner }}
       source_branch: main
       target_branch: stable
-      request_review: false
       # The release gate resolves the :testing tag (published by main builds)
       # and verifies its cosign signature. Enable the OPTIONAL keyless signing
       # step in build-image.yml for the gate to report release/ready.
