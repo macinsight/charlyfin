@@ -1,20 +1,4 @@
 ###############################################################################
-# PROJECT NAME CONFIGURATION
-###############################################################################
-# Name: finpilot
-#
-# IMPORTANT: Change "finpilot" above to your desired project name.
-# This name is restated in several files that cannot read each other. The
-# authoritative name at publish time is the repository name: build-image.yml
-# derives IMAGE_NAME from ${{ github.event.repository.name }} and pushes the
-# GHCR package under it. The value below is the fallback used by local
-# `just build` and by the image-identity metadata written into the image.
-#
-# When forking, update every site listed under "Rename the Project" in
-# README.md. Nothing validates that these agree — see issue #291.
-###############################################################################
-
-###############################################################################
 # MULTI-STAGE BUILD ARCHITECTURE
 ###############################################################################
 # This Containerfile follows the Bluefin architecture pattern as implemented in
@@ -48,14 +32,14 @@ COPY custom /custom
 COPY --from=common /system_files /oci/common
 COPY --from=brew /system_files /oci/brew
 
-# Base Image - GNOME included (Fedora official OSTree desktop)
+# Base Image - Bluefin
 # Renovate will keep the digest pin up to date.
-FROM quay.io/fedora-ostree-desktops/silverblue:44@sha256:065a194d83cc86785e25f0e5857f8282019fce0d4d3a64239bb148b7b3dc19c1
+FROM ghcr.io/projectbluefin/bluefin:testing-20260914.1@sha256:7c25e1a81236999db6eb68281996b175be6597f68b84449830a2a0b03d26c6cd
 
 # Image identity - these define how bootc, fastfetch, and the ublue ecosystem
 # recognize your image. Change these to match your project name.
-ARG IMAGE_NAME="finpilot"
-ARG IMAGE_VENDOR="projectbluefin"
+ARG IMAGE_NAME="charlyfin"
+ARG IMAGE_VENDOR="macinsight"
 ARG UBLUE_IMAGE_TAG="stable"
 ARG BASE_IMAGE_NAME="silverblue"
 ARG FEDORA_MAJOR_VERSION="44"
