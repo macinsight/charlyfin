@@ -121,6 +121,16 @@ jobs:
               - 'custom/**'
               - 'Justfile'
 
+      - name: Login Podman to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          printf '%s' "${GHCR_TOKEN}" |
+            sudo podman login ghcr.io \
+              --username "${GITHUB_ACTOR}" \
+              --password-stdin
+
       - name: Build image
         if: steps.detect-changes.outputs.should_build == 'true' || github.event_name != 'pull_request'
         id: build-image
