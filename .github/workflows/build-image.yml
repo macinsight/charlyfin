@@ -39,7 +39,7 @@ env:
   IMAGE_LOGO_URL: "https://avatars.githubusercontent.com/u/120078124?s=200&v=4"
   DEFAULT_TAG: "stable"
   PRODUCTION_BRANCH: "stable" # The branch that publishes :stable production images
-  REGISTRY_CACHE_WRITE: ${{ github.event_name != 'pull_request' && '1' || '0' }}
+  REGISTRY_CACHE_WRITE: ${{ github.event_name != 'pull_request' && '0' || '0' }}
   ENABLE_RECHUNKING: "false"
   RECHUNK_MAX_LAYERS: "128"
 
@@ -120,6 +120,16 @@ jobs:
               - 'build/**'
               - 'custom/**'
               - 'Justfile'
+
+      - name: Login Podman to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          printf '%s' "${GHCR_TOKEN}" |
+            sudo podman login ghcr.io \
+              --username "${GITHUB_ACTOR}" \
+              --password-stdin
 
       - name: Build image
         if: steps.detect-changes.outputs.should_build == 'true' || github.event_name != 'pull_request'
