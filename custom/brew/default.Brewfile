@@ -3,3 +3,5 @@
 # Users install via: ujust install-default-apps
 
 brew "zellij"
+brew "glow"
+brew "bitwarden-cli"
