@@ -19,7 +19,7 @@ set -euo pipefail
 ###############################################################################
 
 # Branding — customize these for your image
-IMAGE_PRETTY_NAME="${IMAGE_PRETTY_NAME:-My Custom OS}"
+IMAGE_PRETTY_NAME="${IMAGE_PRETTY_NAME:-Charlyfin}"
 IMAGE_LIKE="${IMAGE_LIKE:-fedora}"
 HOME_URL="${HOME_URL:-https://github.com/${IMAGE_VENDOR}/${IMAGE_NAME}}"
 DOCUMENTATION_URL="${DOCUMENTATION_URL:-https://github.com/${IMAGE_VENDOR}/${IMAGE_NAME}/blob/main/README.md}"
@@ -64,8 +64,9 @@ echo "  image-vendor: ${IMAGE_VENDOR}"
 ###############################################################################
 # Customize /usr/lib/os-release
 ###############################################################################
-# Only modify if the file exists and VARIANT_ID is not already set
-if [[ -f "${OS_RELEASE}" ]] && ! grep -q "^VARIANT_ID=" "${OS_RELEASE}"; then
+# Replace the base image identity so bootloader entries and OS metadata use the
+# custom image name instead of retaining the base distribution branding.
+if [[ -f "${OS_RELEASE}" ]]; then
 	# Read existing values
 	if [[ -n "${VERSION:-}" ]]; then
 		OS_VERSION="${VERSION}"
@@ -73,7 +74,9 @@ if [[ -f "${OS_RELEASE}" ]] && ! grep -q "^VARIANT_ID=" "${OS_RELEASE}"; then
 		OS_VERSION="${UBLUE_IMAGE_TAG}"
 	fi
 
-	# Append our identity
+	# Remove values supplied by the base image before writing the custom identity.
+	sed -i -E '/^(VARIANT_ID|PRETTY_NAME|NAME|IMAGE_ID|IMAGE_VERSION|ID_LIKE|HOME_URL|DOCUMENTATION_URL|SUPPORT_URL|BUG_REPORT_URL)=/d' "${OS_RELEASE}"
+
 	cat >>"${OS_RELEASE}" <<EOF
 
 # ${IMAGE_NAME} image identity
