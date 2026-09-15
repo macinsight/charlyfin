@@ -185,15 +185,21 @@ json_field() {
     [ "$output" -eq 1 ]
 }
 
-@test "00-image-info: pre-existing VARIANT_ID suppresses the os-release append" {
-    printf 'VARIANT_ID="preset"\n' >>"${OS_RELEASE}"
+@test "00-image-info: replaces pre-existing base image branding" {
+    cat >>"${OS_RELEASE}" <<'EOF'
+VARIANT_ID="bluefin"
+PRETTY_NAME="Bluefin"
+IMAGE_ID="bluefin"
+EOF
     run bash "${SCRIPT}"
     [ "$status" -eq 0 ]
-    [[ "$output" != *"Customized"* ]]
+    [[ "$output" == *"Customized"* ]]
 
     run grep -c '^VARIANT_ID=' "${OS_RELEASE}"
     [ "$output" -eq 1 ]
-    grep -q '^VARIANT_ID="preset"$' "${OS_RELEASE}"
+    grep -q '^VARIANT_ID="main"$' "${OS_RELEASE}"
+    grep -q '^PRETTY_NAME="Charlyfin"$' "${OS_RELEASE}"
+    grep -q '^IMAGE_ID="finpilot"$' "${OS_RELEASE}"
 }
 
 @test "00-image-info: image-info.json is still written when os-release is absent" {
