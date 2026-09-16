@@ -329,7 +329,7 @@ jobs:
 
       - name: Upload image health report
         if: always() && (steps.detect-changes.outputs.should_build == 'true' || github.event_name != 'pull_request')
-        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: image-health-report
           path: health-report/
