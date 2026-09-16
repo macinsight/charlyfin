@@ -279,19 +279,77 @@ jobs:
           certificate-identity-regexp: https://github.com/${{ github.repository }}/.github/workflows/
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build telemetry summary
+      - name: Generate image health report
         if: steps.detect-changes.outputs.should_build == 'true' || github.event_name != 'pull_request'
         shell: bash
         run: |
-          IMAGE_SIZE=$(sudo podman image inspect "localhost/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}" \
+          mkdir -p health-report
+          IMAGE_REF="localhost/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}"
+          IMAGE_SIZE=$(sudo podman image inspect "${IMAGE_REF}" \
             --format '{{.Size}}' 2>/dev/null || echo "0")
           IMAGE_SIZE_MB=$(( IMAGE_SIZE / 1024 / 1024 ))
-          LAYER_COUNT=$(sudo podman image inspect "localhost/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}" \
+          LAYER_COUNT=$(sudo podman image inspect "${IMAGE_REF}" \
             --format '{{len .RootFS.Layers}}' 2>/dev/null || echo "?")
+          sudo podman image inspect "${IMAGE_REF}" > health-report/image-inspect.json
+          sudo podman history --no-trunc "${IMAGE_REF}" > health-report/layers.txt
+          sudo podman run --rm "${IMAGE_REF}" rpm -qa --qf '%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}\n' \
+            | sort > health-report/packages.txt
+          PACKAGE_COUNT=$(wc -l < health-report/packages.txt)
 
           {
-            echo "## Build Telemetry: ${{ env.IMAGE_NAME }}"
+            echo "## Image Health Report: ${{ env.IMAGE_NAME }}"
             echo ""
             echo "**Image size (uncompressed):** ${IMAGE_SIZE_MB} MB"
             echo "**Layer count:** ${LAYER_COUNT}"
+            echo "**Installed RPM packages:** ${PACKAGE_COUNT}"
+            echo ""
+            echo "Detailed image metadata, layer history, and package inventory are available in the \`image-health-report\` artifact."
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Generate SBOM
+        if: steps.detect-changes.outputs.should_build == 'true' || github.event_name != 'pull_request'
+        continue-on-error: true
+        uses: anchore/sbom-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.20.5
+        with:
+          image: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}
+          registry-username: ${{ github.actor }}
+          registry-password: ${{ secrets.GITHUB_TOKEN }}
+          format: spdx-json
+          output-file: health-report/sbom.spdx.json
+          upload-artifact: false
+
+      - name: Scan image vulnerabilities
+        if: steps.detect-changes.outputs.should_build == 'true' || github.event_name != 'pull_request'
+        continue-on-error: true
+        uses: aquasecurity/trivy-action@da167eac915b4e86f08b264dbdbc867b61be6f0c # v0.28.0
+        with:
+          image-ref: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}
+          format: json
+          output: health-report/trivy.json
+          ignore-unfixed: true
+          vuln-type: os,library
+          severity: CRITICAL,HIGH,MEDIUM
+          exit-code: "0"
+
+      - name: Add vulnerability summary
+        if: steps.detect-changes.outputs.should_build == 'true' || github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          {
+            echo ""
+            echo "SBOM and vulnerability scan reports are included in the \`image-health-report\` artifact."
+            if [[ -s health-report/trivy.json ]]; then
+              echo "The Trivy scan completed with unfixed vulnerabilities ignored."
+            else
+              echo "The Trivy scan did not produce a report; inspect the scan step logs."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload image health report
+        if: always() && (steps.detect-changes.outputs.should_build == 'true' || github.event_name != 'pull_request')
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4
+        with:
+          name: image-health-report
+          path: health-report/
+          if-no-files-found: warn
+          retention-days: 30

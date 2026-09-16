@@ -136,6 +136,15 @@ label and a `pull_request` workflow that invokes GitHub's native auto-merge
 operation with squash mode. Keep the job conditional on the label and retain
 branch protection as the gate; applying the label should request auto-merge,
 not bypass required checks.
+
+## Image health reports
+
+For post-publish health reporting, keep the image build as the source of truth:
+collect local image metadata, layer history, and RPM inventory before cleanup,
+then scan the published tag for an SPDX SBOM and vulnerabilities. Keep scans
+non-blocking when they are diagnostic, upload their outputs as a short-lived
+artifact, and summarize report availability in `GITHUB_STEP_SUMMARY`.
+
 ## Renovate Automerge Scope
 
 ### ✅ Safe to automerge broadly (digest/pin only)
