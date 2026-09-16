@@ -35,13 +35,18 @@ jobs:
             const current = await github.rest.issues.listLabelsOnIssue({
               owner, repo, issue_number: pullNumber, per_page: 100
             });
-            const labels = current.data.map((label) => label.name)
-              .filter((label) => label !== 'chore/deps' && label !== 'automerge');
-            labels.push('chore/deps');
+            for (const label of current.data
+              .map(({ name }) => name)
+              .filter((name) => name === 'chore/deps' || name === 'automerge')) {
+              await github.rest.issues.removeLabelFromIssue({
+                owner, repo, issue_number: pullNumber, name: label
+              });
+            }
+            const labels = ['chore/deps'];
             if (pullRequest.user.login === 'renovate[bot]' && digestOnly) {
               labels.push('automerge');
             }
-            await github.rest.issues.setLabels({
+            await github.rest.issues.addLabels({
               owner, repo, issue_number: pullNumber, labels
             });
             core.notice(`Dependency PR labeled; digest-only=${digestOnly}`);
