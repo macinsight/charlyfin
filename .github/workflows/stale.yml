@@ -16,7 +16,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Mark inactive work
-        uses: actions/stale@f28e40c7f34bde8b3046d885e986cb6290c5673b # v9
+        uses: actions/stale@5bef64f19d7facfb25b37b414482c7164d639639 # v9
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           days-before-stale: 30
