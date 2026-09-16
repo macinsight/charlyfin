@@ -87,6 +87,24 @@ Use the `finpilot-maintain` and `finpilot-ci` skills, then:
 - Production Grade Features
   - Container signing with keyless OIDC
 
+### Image Health Reports
+
+Publish builds generate an `image-health-report` artifact from the image that
+was built. The artifact is retained for 30 days and includes:
+
+- Image metadata and layer history
+- An RPM package inventory
+- An SPDX-format software bill of materials (SBOM)
+- A Trivy vulnerability scan covering operating-system and library packages
+
+The SBOM and vulnerability scan are diagnostic checks and do not block image
+publication. The scan ignores unfixed vulnerabilities and reports
+`CRITICAL`, `HIGH`, and `MEDIUM` findings. If a scan cannot produce a report,
+inspect the workflow logs; the build summary will identify that condition.
+
+Reports are generated for publish builds after the image is pushed. Pull
+request validation does not publish an image-health artifact.
+
 ### Homebrew Integration
 
 - Pre-configured Brewfiles for easy package installation and customization
