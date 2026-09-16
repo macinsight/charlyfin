@@ -309,7 +309,7 @@ jobs:
       - name: Generate SBOM
         if: steps.detect-changes.outputs.should_build == 'true' || github.event_name != 'pull_request'
         continue-on-error: true
-        uses: anchore/sbom-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.20.5
+        uses: anchore/sbom-action@da167eac915b4e86f08b264dbdbc867b61be6f0c # v0.20.5
         with:
           image: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}
           registry-username: ${{ github.actor }}
@@ -321,7 +321,7 @@ jobs:
       - name: Scan image vulnerabilities
         if: steps.detect-changes.outputs.should_build == 'true' || github.event_name != 'pull_request'
         continue-on-error: true
-        uses: aquasecurity/trivy-action@da167eac915b4e86f08b264dbdbc867b61be6f0c # v0.28.0
+        uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
         with:
           image-ref: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}
           format: json
