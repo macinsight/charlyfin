@@ -1,0 +1,47 @@
+name: label dependency pull requests
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  dependencies:
+    if: github.event.pull_request.user.login == 'renovate[bot]' || startsWith(github.event.pull_request.title, 'chore(deps)')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Label dependency updates and gate automerge
+        uses: actions/github-script@5bef64f19d7facfb25b37b414482c7164d639639 # v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const pullRequest = context.payload.pull_request;
+            const pullNumber = pullRequest.number;
+            const files = await github.paginate(
+              github.rest.pulls.listFiles,
+              { owner, repo, pull_number: pullNumber, per_page: 100 }
+            );
+            const digestOnly = files.length > 0 && files.every((file) => {
+              const changed = (file.patch || '').split('\n')
+                .filter((line) => (line.startsWith('+') || line.startsWith('-')) &&
+                  !line.startsWith('+++') && !line.startsWith('---'));
+              return changed.length > 0 &&
+                changed.every((line) => /sha256:[0-9a-f]{64}/.test(line));
+            });
+            const current = await github.rest.issues.listLabelsOnIssue({
+              owner, repo, issue_number: pullNumber, per_page: 100
+            });
+            const labels = current.data.map((label) => label.name)
+              .filter((label) => label !== 'chore/deps' && label !== 'automerge');
+            labels.push('chore/deps');
+            if (pullRequest.user.login === 'renovate[bot]' && digestOnly) {
+              labels.push('automerge');
+            }
+            await github.rest.issues.setLabels({
+              owner, repo, issue_number: pullNumber, labels
+            });
+            core.notice(`Dependency PR labeled; digest-only=${digestOnly}`);
