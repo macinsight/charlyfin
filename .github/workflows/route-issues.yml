@@ -1,0 +1,53 @@
+name: route issues
+
+on:
+  issues:
+    types: [opened, edited, labeled, unlabeled]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  route:
+    if: contains(github.event.issue.labels.*.name, '1-triage')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Route feature requests for discussion
+        uses: actions/github-script@5bef64f19d7facfb25b37b414482c7164d639639 # v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const labels = issue.labels.map((label) => label.name);
+            const isFeatureRequest = labels.includes('enhancement') ||
+              issue.body?.includes('What would you like to see?');
+            const optedIn = /- \[[xX]\].*Opt in to a clanker/.test(issue.body || '');
+            const queue = optedIn ? '3-clanker-queue'
+              : isFeatureRequest ? '2-discussing'
+              : null;
+
+            if (!queue) {
+              core.notice('Issue remains in human triage.');
+              return;
+            }
+
+            const remove = ['1-triage', '2-discussing', '3-clanker-queue',
+              '3-human-queue'].filter((label) => label !== queue);
+            for (const label of remove) {
+              if (labels.includes(label)) {
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  name: label
+                });
+              }
+            }
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              labels: [queue]
+            });
+            core.notice(`Routed issue to ${queue}`);
