@@ -1,0 +1,41 @@
+name: manage stale issues and pull requests
+
+on:
+  schedule:
+    - cron: "30 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Mark inactive work
+        uses: actions/stale@f28e40c7f34bde8b3046d885e986cb6290c5673b # v9
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          days-before-stale: 30
+          days-before-close: 14
+          stale-issue-label: hold
+          close-issue-label: invalid
+          stale-pr-label: hold
+          close-pr-label: invalid
+          stale-issue-message: >
+            This issue has had no activity for 30 days. It is marked `hold`;
+            comment or update it to keep it active.
+          close-issue-message: >
+            Closing after 14 additional inactive days. Reopen it with updated
+            context if the problem is still present.
+          stale-pr-message: >
+            This pull request has had no activity for 30 days. It is marked
+            `hold`; update it or comment to keep it active.
+          close-pr-message: >
+            Closing after 14 additional inactive days. Reopen it when it is
+            ready to continue.
+          exempt-issue-labels: blocked,priority/p1,release/blocked
+          exempt-pr-labels: blocked,priority/p1,release/blocked
