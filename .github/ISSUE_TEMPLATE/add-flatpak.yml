@@ -1,0 +1,72 @@
+name: "Add a Flatpak"
+description: "Request a GUI application for first-boot Flatpak installation."
+labels: ["1-triage", "enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Flatpaks are installed after first boot when networking is available.
+        They are not embedded in the container or ISO.
+
+  - type: checkboxes
+    id: clanker-opt-in
+    attributes:
+      label: "Agent assistance"
+      options:
+        - label: "Opt in to a clanker working on my issue"
+          required: false
+
+  - type: input
+    id: flatpak-id
+    attributes:
+      label: "Flathub application ID"
+      description: "Use the exact ID shown on Flathub, for example org.gnome.Calculator."
+      placeholder: "org.example.Application"
+    validations:
+      required: true
+
+  - type: input
+    id: flathub-url
+    attributes:
+      label: "Flathub URL"
+      placeholder: "https://flathub.org/apps/org.example.Application"
+    validations:
+      required: true
+
+  - type: textarea
+    id: reason
+    attributes:
+      label: "What would you like to see?"
+      description: "Explain who needs this app and which existing app set it belongs with."
+      placeholder: "Add this application to the default desktop app set because..."
+    validations:
+      required: true
+
+  - type: input
+    id: preinstall-file
+    attributes:
+      label: "Target preinstall file"
+      description: "Choose an existing file or propose a new custom/flatpaks/*.preinstall file."
+      placeholder: "custom/flatpaks/default.preinstall"
+    validations:
+      required: true
+
+  - type: textarea
+    id: done
+    attributes:
+      label: "What does done look like?"
+      description: "Include Branch=stable and how the app should be verified after first boot."
+      placeholder: |
+        Add [Flatpak Preinstall org.example.Application] with Branch=stable.
+        After first boot, the app should appear in the application menu.
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: "Extra context"
+      description: "Optional permissions, alternatives, licensing, or related issues."
+      placeholder: "Related issue, upstream project, or desktop integration details."
+    validations:
+      required: false
