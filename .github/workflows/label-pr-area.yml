@@ -38,10 +38,16 @@ jobs:
             const current = await github.rest.issues.listLabelsOnIssue({
               owner, repo, issue_number: pullNumber, per_page: 100
             });
-            const labels = current.data
-              .map((label) => label.name)
-              .filter((label) => !label.startsWith('area/'));
-            await github.rest.issues.setLabels({
-              owner, repo, issue_number: pullNumber, labels: [...labels, ...areas]
-            });
+            for (const label of current.data
+              .map(({ name }) => name)
+              .filter((name) => name.startsWith('area/'))) {
+              await github.rest.issues.removeLabelFromIssue({
+                owner, repo, issue_number: pullNumber, name: label
+              });
+            }
+            if (areas.length > 0) {
+              await github.rest.issues.addLabels({
+                owner, repo, issue_number: pullNumber, labels: areas
+              });
+            }
             core.notice(`Applied area labels: ${areas.join(', ') || 'none'}`);
