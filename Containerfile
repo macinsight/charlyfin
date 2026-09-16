@@ -20,7 +20,7 @@
 # OCI context images - imported below and pinned directly in their FROM lines.
 # The base image is pinned in the FROM line below and updated by Renovate.
 FROM ghcr.io/projectbluefin/common:latest@sha256:cba9a07b7e699ab42923581de90254eacf624b89425be094a1588f381c7902b1 AS common
-FROM ghcr.io/ublue-os/brew:latest@sha256:5c5b6dea4b9faaab4d6fa81d7fc4f37f218c8a75a0839c72ae70b268bfdf4b0f AS brew
+FROM ghcr.io/ublue-os/brew:latest@sha256:60ada2d65891d8797beef49d8b43f2108519cbbaf04c9c7363e1a008677fcd35 AS brew
 
 # Context stage - combine local and imported OCI container resources
 FROM scratch AS ctx
@@ -34,7 +34,7 @@ COPY --from=brew /system_files /oci/brew
 
 # Base Image - Bluefin
 # Renovate will keep the digest pin up to date.
-FROM ghcr.io/projectbluefin/bluefin:testing-20260914.1@sha256:7c25e1a81236999db6eb68281996b175be6597f68b84449830a2a0b03d26c6cd
+FROM ghcr.io/projectbluefin/bluefin:stable@sha256:684a93715f5cff468e0eb48b66ce80e67ae2ef1535fecacf3911d0eab1e73ac9
 
 # Image identity - these define how bootc, fastfetch, and the ublue ecosystem
 # recognize your image. Change these to match your project name.
@@ -71,6 +71,14 @@ RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
     --mount=type=tmpfs,dst=/boot \
     --mount=type=tmpfs,dst=/tmp \
     /ctx/build/10-build.sh
+
+RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
+    --mount=type=cache,dst=/var/cache/libdnf5 \
+    --mount=type=cache,dst=/var/cache/rpm-ostree \
+    --mount=type=secret,id=GITHUB_TOKEN \
+    --mount=type=tmpfs,dst=/boot \
+    --mount=type=tmpfs,dst=/tmp \
+    /ctx/build/30-cosmic-desktop.sh
 
 ### CLEANUP
 ## Use Bluefin's clean-stage.sh to remove build artifacts before linting.
