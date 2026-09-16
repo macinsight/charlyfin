@@ -4,28 +4,41 @@
 
 ## What Makes this Raptor Different?
 
-Here are the changes from [Base Image Name]. This image is based on [Bluefin/Bazzite/Aurora/etc] and includes these customizations:
+This image is based on Fedora Silverblue with the COSMIC desktop from
+System76. It replaces the default GNOME desktop and includes the following
+customizations:
 
 ### Added Packages (Build-time)
 
-- **System packages**: `tmux` and `gum` — tmux is the template's package-manager cache smoke test, and gum provides the interactive prompts used by the default ujust recipes.
+- **System packages**: `tmux`, `gum`, and `alacritty`.
+- **COSMIC desktop**: `cosmic-session`, `cosmic-greeter`, `cosmic-comp`,
+  `cosmic-panel`, `cosmic-launcher`, `cosmic-applets`, `cosmic-settings`,
+  `cosmic-files`, `cosmic-edit`, `cosmic-term`, and `cosmic-workspaces`,
+  installed from the `ryanabx/cosmic-epoch` COPR.
+- **COSMIC utilities**: `kitty`, `flatpak`, and
+  `xdg-desktop-portal-cosmic`.
 
 ### Added Applications (Runtime)
 
-- **CLI Tools (Homebrew)**: `zellij` — a terminal multiplexer for managing persistent, multi-pane workflows.
-- **GUI Apps (Flatpak)**: Zen Browser — a privacy-focused web browser.
+- **CLI Tools (Homebrew)**: `zellij`, `glow`, and `bitwarden-cli`.
+- **GUI Apps (Flatpak)**: Zen Browser (`app.zen_browser.zen`), installed on
+  first boot.
+- **ujust commands**: Homebrew bundle shortcuts for default, development, and
+  font collections; `install-all-brew`; generic Flatpak installation; and
+  example VS Code, GIMP, and JetBrains Toolbox installers.
 
-### Removed/Disabled
+### Removed
 
-- List anything removed from base image
+- GNOME Shell, GNOME extensions, GNOME Terminal, GNOME Software, GNOME
+  Control Center, Nautilus, and GDM are removed in favor of COSMIC.
 
 ### Configuration Changes
 
-- Any systemd services enabled/disabled
-- Desktop environment changes
-- Other notable modifications
+- COSMIC Greeter is enabled and a COSMIC X11 session entry is installed.
+- Podman, Homebrew setup, Homebrew update, and Homebrew upgrade services are
+  enabled.
 
-_Last updated: 2026-09-15_
+_Last updated: 2026-09-16_
 
 ## Guided Copilot Mode
 
@@ -86,6 +99,24 @@ Use the `finpilot-maintain` and `finpilot-ci` skills, then:
   - Brewfile, Justfile, ShellCheck, Renovate config, and it'll even check to make sure the flatpak you add exists on FlatHub
 - Production Grade Features
   - Container signing with keyless OIDC
+
+### Image Health Reports
+
+Publish builds generate an `image-health-report` artifact from the image that
+was built. The artifact is retained for 30 days and includes:
+
+- Image metadata and layer history
+- An RPM package inventory
+- An SPDX-format software bill of materials (SBOM)
+- A Trivy vulnerability scan covering operating-system and library packages
+
+The SBOM and vulnerability scan are diagnostic checks and do not block image
+publication. The scan ignores unfixed vulnerabilities and reports
+`CRITICAL`, `HIGH`, and `MEDIUM` findings. If a scan cannot produce a report,
+inspect the workflow logs; the build summary will identify that condition.
+
+Reports are generated for publish builds after the image is pushed. Pull
+request validation does not publish an image-health artifact.
 
 ### Homebrew Integration
 
@@ -360,7 +391,7 @@ This template follows the **multi-stage build architecture** from @projectbluefi
 
 **Stage 2: Base Image** - Default options:
 
-- `quay.io/fedora-ostree-desktops/silverblue:44` (Fedora-based GNOME desktop, default)
+- `quay.io/fedora-ostree-desktops/silverblue:44` (Fedora-based desktop base)
 - `quay.io/centos-bootc/centos-bootc:stream10` (CentOS-based alternative)
 
 ### Benefits of This Architecture
