@@ -129,6 +129,13 @@ The `renovate.json` custom manager tracks this pattern:
 
 Never use `/releases/latest/` — it is non-reproducible.
 
+## Labeled pull request automerge
+
+If repository maintainers want opt-in automerge, use a dedicated `automerge`
+label and a `pull_request` workflow that invokes GitHub's native auto-merge
+operation with squash mode. Keep the job conditional on the label and retain
+branch protection as the gate; applying the label should request auto-merge,
+not bypass required checks.
 ## Renovate Automerge Scope
 
 ### ✅ Safe to automerge broadly (digest/pin only)
