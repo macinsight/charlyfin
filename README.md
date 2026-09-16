@@ -329,12 +329,12 @@ Ready to take your custom OS to production? Enable these features for enhanced s
   - Uses keyless OIDC signing via GitHub Actions — no keys or secrets required
   - Verify it works with the `cosign verify` command in the "Image Signing" section above
 
-- [ ] **Enable Image Rechunking** (Recommended)
+- [x] **Enable Image Rechunking**
   - Optimizes bootc image layers for better update performance
   - Improves download resumability with evenly sized layers
   - Set `ENABLE_RECHUNKING: "true"` in `.github/workflows/build-image.yml`
   - Uses OCI-native chunkah; `/usr/libexec/bootc-base-imagectl` is not required
-  - Status: **Not enabled by default** (optional optimization)
+  - Status: **Enabled by default** for publish builds
 
 #### Adding Image Rechunking
 
@@ -342,7 +342,7 @@ The old rechunking recipe used `/usr/libexec/bootc-base-imagectl`, which is abse
 
 Finpilot instead uses the OCI-native [`bootc-build/chunka`](https://github.com/projectbluefin/actions/tree/main/bootc-build/chunka) action. The action runs chunkah from a pinned container and replaces the locally built image before the existing tag and push steps. The default Fedora Silverblue-based finpilot image is RPM-based, so chunkah can discover components from its RPM database without `bootc-base-imagectl`.
 
-To enable it, change the workflow environment value:
+The workflow enables it for publish builds with:
 
 ```yaml
 env:
