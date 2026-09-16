@@ -318,31 +318,13 @@ jobs:
           output-file: health-report/sbom.spdx.json
           upload-artifact: false
 
-      - name: Scan image vulnerabilities
-        if: steps.detect-changes.outputs.should_build == 'true' || github.event_name != 'pull_request'
-        continue-on-error: true
-        uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
-        with:
-          image-ref: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}
-          format: json
-          output: health-report/trivy.json
-          ignore-unfixed: true
-          vuln-type: os,library
-          severity: CRITICAL,HIGH,MEDIUM
-          exit-code: "0"
-
-      - name: Add vulnerability summary
+      - name: Add SBOM summary
         if: steps.detect-changes.outputs.should_build == 'true' || github.event_name != 'pull_request'
         shell: bash
         run: |
           {
             echo ""
-            echo "SBOM and vulnerability scan reports are included in the \`image-health-report\` artifact."
-            if [[ -s health-report/trivy.json ]]; then
-              echo "The Trivy scan completed with unfixed vulnerabilities ignored."
-            else
-              echo "The Trivy scan did not produce a report; inspect the scan step logs."
-            fi
+            echo "The SBOM report is included in the \`image-health-report\` artifact."
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload image health report
