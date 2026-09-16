@@ -1,0 +1,47 @@
+name: label pull request area
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  area:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Apply area labels
+        uses: actions/github-script@5bef64f19d7facfb25b37b414482c7164d639639 # v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const pullNumber = context.payload.pull_request.number;
+            const files = await github.paginate(
+              github.rest.pulls.listFiles,
+              { owner, repo, pull_number: pullNumber, per_page: 100 }
+            );
+            const areaByPath = [
+              ['area/ci', (path) => path.startsWith('.github/')],
+              ['area/build', (path) =>
+                path === 'Containerfile' || path === 'Justfile' ||
+                path.startsWith('build/')],
+              ['area/runtime', (path) => path.startsWith('custom/')],
+              ['area/docs', (path) =>
+                path.endsWith('.md') || path.startsWith('docs/')]
+            ];
+            const areas = areaByPath
+              .filter(([, matches]) => files.some(({ filename }) => matches(filename)))
+              .map(([label]) => label);
+            const current = await github.rest.issues.listLabelsOnIssue({
+              owner, repo, issue_number: pullNumber, per_page: 100
+            });
+            const labels = current.data
+              .map((label) => label.name)
+              .filter((label) => !label.startsWith('area/'));
+            await github.rest.issues.setLabels({
+              owner, repo, issue_number: pullNumber, labels: [...labels, ...areas]
+            });
+            core.notice(`Applied area labels: ${areas.join(', ') || 'none'}`);
