@@ -34,7 +34,7 @@ COPY --from=brew /system_files /oci/brew
 
 # Base Image - Bluefin
 # Renovate will keep the digest pin up to date.
-FROM ghcr.io/projectbluefin/bluefin:stable@sha256:684a93715f5cff468e0eb48b66ce80e67ae2ef1535fecacf3911d0eab1e73ac9
+FROM ghcr.io/projectbluefin/bluefin:stable@sha256:a50af2d633f72b549b395d0973a2cc317654e4e4ad679543b9c52c63c34a0d61
 
 # Image identity - these define how bootc, fastfetch, and the ublue ecosystem
 # recognize your image. Change these to match your project name.
