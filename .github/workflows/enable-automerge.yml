@@ -1,0 +1,53 @@
+name: enable safe labeled pull request automerge
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, labeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  enable:
+    if: contains(github.event.pull_request.labels.*.name, 'automerge')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Enable safe squash auto-merge
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+        with:
+          script: |
+            const pullRequest = context.payload.pull_request;
+            const labels = new Set(pullRequest.labels.map((label) => label.name));
+            const trustedAuthors = new Set([
+              context.repo.owner.toLowerCase(),
+              'renovate[bot]'
+            ]);
+            const author = pullRequest.user.login.toLowerCase();
+            const oversized = ['size:L', 'size:XL', 'size:XXL']
+              .some((label) => labels.has(label));
+            const blocked = ['security', 'priority/p1', 'blocked']
+              .some((label) => labels.has(label));
+
+            if (!trustedAuthors.has(author) || oversized || blocked) {
+              core.notice('Auto-merge not enabled: safety policy rejected this PR.');
+              return;
+            }
+
+            const mutation = `
+              mutation($pullRequestId: ID!) {
+                enablePullRequestAutoMerge(
+                  input: {
+                    pullRequestId: $pullRequestId
+                    mergeMethod: SQUASH
+                  }
+                ) {
+                  pullRequest { number }
+                }
+              }
+            `;
+            await github.graphql(mutation, {
+              pullRequestId: pullRequest.node_id
+            });
+            core.notice('Safe squash auto-merge enabled.');
