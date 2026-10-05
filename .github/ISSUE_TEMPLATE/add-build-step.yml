@@ -1,0 +1,80 @@
+name: "Add a build step"
+description: "Request a numbered build script or base-image customization."
+labels: ["1-triage", "enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Build scripts run as root during image creation. They must use numbered
+        names, `dnf5` (never `dnf` or `yum`), non-interactive `-y` installs,
+        and an explicit `RUN` block in `Containerfile`.
+
+  - type: checkboxes
+    id: clanker-opt-in
+    attributes:
+      label: "Agent assistance"
+      options:
+        - label: "Opt in to a clanker working on my issue"
+          required: false
+
+  - type: input
+    id: script-name
+    attributes:
+      label: "Proposed script name"
+      description: "Use the numbered convention, for example build/20-drivers.sh."
+      placeholder: "build/20-example.sh"
+    validations:
+      required: true
+
+  - type: textarea
+    id: reason
+    attributes:
+      label: "What would you like to see?"
+      description: "Describe the system capability, package, repository, or service this adds."
+      placeholder: "Add this build-time capability because..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: packages
+    attributes:
+      label: "Packages and repositories"
+      description: "List required packages, repositories, COPRs, keys, or secrets. Explain cleanup and isolation."
+      placeholder: |
+        Packages: package-name
+        Repository: none
+        Secrets: none
+        Cleanup: no temporary repositories
+    validations:
+      required: true
+
+  - type: textarea
+    id: containerfile
+    attributes:
+      label: "Containerfile wiring"
+      description: "Describe where the explicit RUN block belongs and which mounts or secrets it needs."
+      placeholder: |
+        Add the script after 10-build.sh and before clean-stage.sh.
+        No additional mounts or secrets are required.
+    validations:
+      required: true
+
+  - type: textarea
+    id: validation
+    attributes:
+      label: "What does done look like?"
+      description: "Include shellcheck, build, and runtime verification criteria."
+      placeholder: |
+        `shellcheck build/20-example.sh` passes.
+        `just build` succeeds and the resulting image contains the capability.
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: "Extra context"
+      description: "Optional upstream documentation, example script, or related issue."
+      placeholder: "Upstream documentation or implementation reference."
+    validations:
+      required: false
