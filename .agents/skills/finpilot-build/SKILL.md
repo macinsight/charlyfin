@@ -95,6 +95,10 @@ VARIANT_ID="${IMAGE_FLAVOR}"
 EOF
 ```
 
+Keep comment-only lines out of the generated `/usr/lib/os-release`; the
+bootc-image-builder parser used by local image conversion rejects them even
+though they are valid according to `os-release(5)`.
+
 ## Base Image
 
 Default: `quay.io/fedora-ostree-desktops/silverblue:44`
