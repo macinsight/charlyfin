@@ -131,6 +131,15 @@ json_field() {
     grep -q '^ID_LIKE="fedora"$' "${OS_RELEASE}"
 }
 
+@test "00-image-info: os-release contains no comment-only lines" {
+    run bash "${SCRIPT}"
+    [ "$status" -eq 0 ]
+
+    run awk 'NF && $0 !~ /=/' "${OS_RELEASE}"
+    [ "$status" -eq 0 ]
+    [ -z "$output" ]
+}
+
 @test "00-image-info: os-release URLs default to the vendor/name GitHub repo" {
     run bash "${SCRIPT}"
     [ "$status" -eq 0 ]

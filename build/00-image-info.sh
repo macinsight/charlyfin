@@ -77,9 +77,13 @@ if [[ -f "${OS_RELEASE}" ]]; then
 	# Remove values supplied by the base image before writing the custom identity.
 	sed -i -E '/^(VARIANT_ID|PRETTY_NAME|NAME|IMAGE_ID|IMAGE_VERSION|ID_LIKE|HOME_URL|DOCUMENTATION_URL|SUPPORT_URL|BUG_REPORT_URL)=/d' "${OS_RELEASE}"
 
+	# Keep the generated file compatible with bootc-image-builder's os-release
+	# parser, which does not accept comment-only lines.
+	sed -i -E '/^[[:space:]]*#/d' "${OS_RELEASE}"
+
+	# ${IMAGE_NAME} image identity
 	cat >>"${OS_RELEASE}" <<EOF
 
-# ${IMAGE_NAME} image identity
 VARIANT_ID="${IMAGE_FLAVOR}"
 PRETTY_NAME="${IMAGE_PRETTY_NAME}"
 NAME="${IMAGE_NAME}"
