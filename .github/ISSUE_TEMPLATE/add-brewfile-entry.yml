@@ -1,0 +1,75 @@
+name: "Add a Brewfile entry"
+description: "Request a Homebrew formula, cask, tap, or Brewfile collection."
+labels: ["1-triage", "enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Brewfiles declare runtime packages installed after deployment.
+        New Brewfiles should have a matching `ujust` shortcut in
+        `custom/ujust/`.
+
+  - type: checkboxes
+    id: clanker-opt-in
+    attributes:
+      label: "Agent assistance"
+      options:
+        - label: "Opt in to a clanker working on my issue"
+          required: false
+
+  - type: input
+    id: package
+    attributes:
+      label: "Homebrew package, cask, or tap"
+      description: "Give the exact Homebrew name and identify whether it is a formula, cask, or tap."
+      placeholder: 'brew "ripgrep" (formula)'
+    validations:
+      required: true
+
+  - type: input
+    id: brewfile
+    attributes:
+      label: "Target Brewfile"
+      description: "Choose an existing file or propose a new custom/brew/*.Brewfile file."
+      placeholder: "custom/brew/default.Brewfile"
+    validations:
+      required: true
+
+  - type: textarea
+    id: reason
+    attributes:
+      label: "What would you like to see?"
+      description: "Explain the use case and why this belongs in the selected Brewfile."
+      placeholder: "Add this CLI tool because..."
+    validations:
+      required: true
+
+  - type: input
+    id: ujust-command
+    attributes:
+      label: "ujust command"
+      description: "Name the existing command or proposed command users should run."
+      placeholder: "ujust install-default-apps"
+    validations:
+      required: true
+
+  - type: textarea
+    id: done
+    attributes:
+      label: "What does done look like?"
+      description: "Describe the Brewfile syntax, shortcut, and validation command."
+      placeholder: |
+        Add brew "package-name" to custom/brew/default.Brewfile.
+        Confirm `brew bundle check --file` succeeds and the package is
+        available through the matching ujust command.
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: "Extra context"
+      description: "Optional upstream URL, platform limitations, or related issues."
+      placeholder: "Homebrew formula URL or notes about runtime behavior."
+    validations:
+      required: false
